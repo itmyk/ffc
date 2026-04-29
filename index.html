@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>未来予創組織</title>
+<title>未来予創組織 - 配属先予測シミュレーター</title>
 <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Serif+JP:wght@700;900&display=swap');
@@ -224,17 +224,17 @@ z-index: 300;
 <div class="magic-circle" id="magic-circle"></div>
 
 <div id="cut-in">
-<div id="cut-in-text">接続…完了！</div>
+<div id="cut-in-text">確率収束…100%！</div>
 </div>
 
 <div class="main-title">未来予創組織</div>
-<div id="incantation">新たな可能性へアクセスしています...</div>
+<div id="incantation">高度予測演算エンジン 起動...</div>
 
 <div class="display-container" id="container">
-<div id="result">System Ready...</div>
+<div id="result">Waiting for Access...</div>
 </div>
 
-<button id="drawBtn" onclick="runFortuneTelling()">未来を確定させる</button>
+<button id="drawBtn" onclick="runFortuneTelling()">予測シミュレーション実行</button>
 
 <script>
 const departments = [
@@ -284,15 +284,16 @@ let effectTimer;
 
 function spawnText() {
 const container = document.getElementById('effect-layer');
-const words = ["解析中", "同期中", "…ッ！", "LOADING", "最適化", "座標確定", "演算"];
+const words = ["解析中", "同期中", "Sync...", "CALCULATING", "最適化", "座標確定", "演算", "収束中", "再試行", "ERROR 0x12", "アクセス承認"];
 const span = document.createElement('span');
 span.innerText = words[Math.floor(Math.random() * words.length)];
 span.className = 'floating-text';
 span.style.left = (10 + Math.random() * 80) + '%';
 span.style.top = (10 + Math.random() * 80) + '%';
 span.style.setProperty('--initial-rotate', (Math.random() - 0.5) * 40 + 'deg');
-span.style.color = span.innerText.includes("ッ") || span.innerText.includes("確定") ? "#ff80ab" : "#4fc3f7";
-span.style.fontSize = (Math.random() * 1.0 + 1.0) + 'rem';
+// 特定のワードに警告色（ピンク）をつける
+span.style.color = span.innerText.includes("ERROR") || span.innerText.includes("確定") ? "#ff80ab" : "#4fc3f7";
+span.style.fontSize = (Math.random() * 0.8 + 0.8) + 'rem';
 container.appendChild(span);
 setTimeout(() => span.remove(), 1500);
 }
@@ -307,11 +308,11 @@ const cutIn = document.getElementById("cut-in");
 
 btn.disabled = true;
 resultDiv.classList.remove("decided");
-incant.innerText = "データが特異点へ集束しています...";
+incant.innerText = "変数を統合し、最適解を算出しています...";
 
 effectTimer = setInterval(spawnText, 100);
 
-let duration = 2500; 
+let duration = 2800; // 演出をわずかに長くして「計算してる感」をアップ
 let startTime = Date.now();
 
 const timer = setInterval(() => {
@@ -321,7 +322,6 @@ resultDiv.innerText = departments[Math.floor(Math.random() * departments.length)
 if (elapsed > duration) {
 clearInterval(timer);
 clearInterval(effectTimer);
-// 結果が出る直前にカットインを表示
 showCutIn();
 }
 }, 50);
@@ -329,12 +329,9 @@ showCutIn();
 function showCutIn() {
 cutIn.classList.add("active");
 
-// カットインが表示されている間に結果を準備し、一気に表示
 setTimeout(() => {
-// カットインを非表示にする
 cutIn.classList.remove("active");
 
-// 同時に結果の演出を開始
 flash.classList.add("flash-anim");
 document.body.classList.add("shake");
 circle.classList.add("magic-circle-anim");
@@ -342,11 +339,11 @@ circle.classList.add("magic-circle-anim");
 const finalDept = departments[Math.floor(Math.random() * departments.length)];
 resultDiv.innerText = finalDept;
 resultDiv.classList.add("decided");
-incant.innerText = "未来の所在が確定しました。";
+incant.innerText = "予測演算が完了しました。";
 
 confetti({
-particleCount: 100,
-spread: 70,
+particleCount: 120,
+spread: 80,
 origin: { y: 0.6 },
 colors: ['#4fc3f7', '#ffffff', '#ffeb3b']
 });
@@ -357,7 +354,7 @@ document.body.classList.remove("shake");
 circle.classList.remove("magic-circle-anim");
 btn.disabled = false;
 }, 1000);
-}, 600); // 0.6秒後にカットインを消して結果を表示
+}, 800); 
 }
 }
 </script>
