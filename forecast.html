@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>未来予創組織</title>
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Noto+Serif+JP:wght@700;900&display=swap');
+
+body {
+background-color: #050a15;
+color: #e0e0e0;
+font-family: 'Noto Serif JP', serif;
+margin: 0;
+height: 100vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+background: radial-gradient(circle at center, #1a237e 0%, #050a15 70%);
+position: relative;
+}
+
+/* スクリーンシェイク */
+.shake { animation: screenShake 0.4s ease-in-out; }
+@keyframes screenShake {
+0%, 100% { transform: translateX(0); }
+25% { transform: translateX(-10px) translateY(5px); }
+50% { transform: translateX(10px) translateY(-5px); }
+75% { transform: translateX(-5px) translateY(5px); }
+}
+
+/* --- カットイン演出 --- */
+#cut-in {
+position: fixed;
+top: 50%; left: 50%;
+transform: translate(-50%, -50%);
+width: 100%;
+height: 0;
+background: rgba(0, 0, 0, 0.95);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 200;
+overflow: hidden;
+pointer-events: none;
+border-top: 2px solid transparent;
+border-bottom: 2px solid transparent;
+opacity: 0;
+visibility: hidden;
+transition: height 0.2s ease, opacity 0.1s ease;
+}
+
+#cut-in.active {
+height: 180px;
+opacity: 1;
+visibility: visible;
+border-top: 2px solid #4fc3f7;
+border-bottom: 2px solid #4fc3f7;
+animation: cutInBounce 0.4s ease-out;
+}
+
+#cut-in-text {
+font-size: clamp(2rem, 10vw, 4rem); 
+font-weight: 900;
+color: #fff;
+letter-spacing: 0.2rem;
+text-shadow: 0 0 20px #4fc3f7, 0 0 40px #1a237e;
+transform: skewX(-20deg);
+opacity: 0;
+white-space: nowrap;
+}
+
+#cut-in.active #cut-in-text {
+animation: textIn 0.4s 0.1s forwards;
+}
+
+@keyframes cutInBounce {
+0% { width: 0; }
+50% { width: 120%; }
+100% { width: 100%; }
+}
+
+@keyframes textIn {
+0% { transform: translate(100px, 0) skewX(-20deg); opacity: 0; }
+100% { transform: translate(0, 0) skewX(-20deg); opacity: 1; }
+}
+
+/* --- UIパーツ --- */
+.main-title {
+font-size: clamp(1.8rem, 8vw, 2.5rem);
+margin-bottom: 10px;
+background: linear-gradient(to bottom, #fff 0%, #4fc3f7 50%, #1565c0 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+font-weight: 900;
+filter: drop-shadow(0 0 15px rgba(79, 195, 247, 0.5));
+z-index: 10;
+text-align: center;
+}
+
+#incantation {
+font-size: 0.9rem;
+color: #b3e5fc;
+height: 1.5rem;
+margin-bottom: 15px;
+font-style: italic;
+opacity: 0.7;
+z-index: 10;
+}
+
+.display-container {
+position: relative;
+width: 85%;
+max-width: 800px;
+height: 250px;
+background: rgba(0, 0, 0, 0.6);
+border: 2px solid #4fc3f7;
+box-shadow: 0 0 20px rgba(79, 195, 247, 0.4), inset 0 0 30px rgba(0, 188, 212, 0.2);
+border-radius: 5px;
+display: flex;
+align-items: center;
+justify-content: center;
+overflow: hidden;
+backdrop-filter: blur(5px);
+z-index: 10;
+}
+
+.magic-circle {
+position: absolute;
+width: 0; height: 0;
+border: 2px solid #fff;
+border-radius: 50%;
+opacity: 0;
+z-index: 5;
+pointer-events: none;
+}
+.magic-circle-anim { animation: circleExpand 0.8s ease-out forwards; }
+
+@keyframes circleExpand {
+0% { width: 0; height: 0; opacity: 1; border-width: 10px; }
+100% { width: 1000px; height: 1000px; opacity: 0; border-width: 1px; }
+}
+
+#result {
+font-size: clamp(1.2rem, 5vw, 2.5rem);
+text-align: center;
+padding: 15px;
+color: #81d4fa;
+font-weight: 900;
+text-shadow: 0 0 10px rgba(129, 212, 250, 0.5);
+line-height: 1.3;
+}
+
+.decided {
+animation: magicAwaken 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+background: linear-gradient(to bottom, #fff 0%, #ffeb3b 40%, #f57c00 100%);
+-webkit-background-clip: text;
+-webkit-text-fill-color: transparent;
+font-size: clamp(1.5rem, 6.5vw, 3.5rem) !important;
+filter: drop-shadow(0 0 20px rgba(255, 235, 59, 0.8));
+}
+
+@keyframes magicAwaken {
+0% { transform: scale(0.3); filter: brightness(5) blur(10px); }
+70% { transform: scale(1.1); filter: brightness(2) blur(0px); }
+100% { transform: scale(1); filter: brightness(1) blur(0px); }
+}
+
+#drawBtn {
+margin-top: 30px;
+background: transparent;
+color: #ffb74d;
+border: 2px solid #ffb74d;
+padding: 12px 35px;
+font-size: 1.2rem;
+font-weight: 900;
+cursor: pointer;
+transition: all 0.3s ease;
+z-index: 10;
+}
+
+#drawBtn:hover {
+background: rgba(255, 183, 77, 0.1);
+box-shadow: 0 0 30px rgba(255, 181, 77, 0.6);
+transform: scale(1.05);
+}
+
+.floating-text {
+position: absolute;
+font-weight: 900;
+pointer-events: none;
+z-index: 5;
+animation: fluffyFade 1.5s ease-out forwards;
+}
+
+@keyframes fluffyFade {
+0% { transform: translate(0, 0) scale(0.8) rotate(var(--initial-rotate)); opacity: 0; filter: blur(8px); }
+30% { transform: translate(0, -10px) scale(1) rotate(var(--initial-rotate)); opacity: 0.7; filter: blur(0px); }
+100% { transform: translate(0, -30px) scale(1.2) rotate(var(--initial-rotate)); opacity: 0; filter: blur(12px); }
+}
+
+.flash {
+position: fixed;
+top: 0; left: 0; width: 100%; height: 100%;
+background: #fff;
+opacity: 0;
+pointer-events: none;
+z-index: 300;
+}
+.flash-anim { animation: flashEffect 0.4s ease-out; }
+@keyframes flashEffect {
+0% { opacity: 0.9; }
+100% { opacity: 0; }
+}
+</style>
+</head>
+<body>
+
+<div id="effect-layer"></div>
+<div class="flash" id="flash-effect"></div>
+<div class="magic-circle" id="magic-circle"></div>
+
+<div id="cut-in">
+<div id="cut-in-text">接続…完了！</div>
+</div>
+
+<div class="main-title">未来予創組織</div>
+<div id="incantation">新たな可能性へアクセスしています...</div>
+
+<div class="display-container" id="container">
+<div id="result">System Ready...</div>
+</div>
+
+<button id="drawBtn" onclick="runFortuneTelling()">未来を確定させる</button>
+
+<script>
+const departments = [
+"第1マーケティング局（ビジネスプロデュース付）",
+"第2マーケティング局（ビジネスプロデュース付）",
+"第3マーケティング局（ビジネスプロデュース付）",
+"第4マーケティング局（ビジネスプロデュース付）",
+"第5マーケティング局（ビジネスプロデュース付）",
+"第6マーケティング局（ビジネスプロデュース付）",
+"第7マーケティング局（ビジネスプロデュース付）",
+"第8マーケティング局（ビジネスプロデュース付）",
+"第1ビジネストランスフォーメーション局",
+"第2ビジネストランスフォーメーション局",
+"第1マーケティング局",
+"第2マーケティング局",
+"第3マーケティング局",
+"第4マーケティング局",
+"第5マーケティング局",
+"第6マーケティング局",
+"第7マーケティング局",
+"第8マーケティング局",
+"データ・テクノロジーセンター",
+"リテールマーケティング局",
+"データマーケティング局",
+"1CRプランニング局",
+"2CRプランニング局",
+"3CRプランニング局",
+"4CRプランニング局",
+"5CRプランニング局",
+"6CRランニング局",
+"zero",
+"BXクリエイティブセンター",
+"CXクリエイティブセンター",
+"ラジオテレビ局",
+"ラジオテレビビジネスプロデュース局",
+"ラジオテレビ（電通デジタル出向）",
+"関西ラジオテレビ&コンテンツビジネス局",
+"新聞局",
+"出版ビジネス・プロデュース局",
+"OOHビジネス局",
+"スポーツビジネスプロデュース局",
+"エンターテインメントビジネス・センター",
+"電通コーポレートワン人事オフィス出向"
+];
+
+let effectTimer;
+
+function spawnText() {
+const container = document.getElementById('effect-layer');
+const words = ["解析中", "同期中", "…ッ！", "LOADING", "最適化", "座標確定", "演算"];
+const span = document.createElement('span');
+span.innerText = words[Math.floor(Math.random() * words.length)];
+span.className = 'floating-text';
+span.style.left = (10 + Math.random() * 80) + '%';
+span.style.top = (10 + Math.random() * 80) + '%';
+span.style.setProperty('--initial-rotate', (Math.random() - 0.5) * 40 + 'deg');
+span.style.color = span.innerText.includes("ッ") || span.innerText.includes("確定") ? "#ff80ab" : "#4fc3f7";
+span.style.fontSize = (Math.random() * 1.0 + 1.0) + 'rem';
+container.appendChild(span);
+setTimeout(() => span.remove(), 1500);
+}
+
+function runFortuneTelling() {
+const resultDiv = document.getElementById("result");
+const btn = document.getElementById("drawBtn");
+const incant = document.getElementById("incantation");
+const flash = document.getElementById("flash-effect");
+const circle = document.getElementById("magic-circle");
+const cutIn = document.getElementById("cut-in");
+
+btn.disabled = true;
+resultDiv.classList.remove("decided");
+incant.innerText = "データが特異点へ集束しています...";
+
+effectTimer = setInterval(spawnText, 100);
+
+let duration = 2500; 
+let startTime = Date.now();
+
+const timer = setInterval(() => {
+const elapsed = Date.now() - startTime;
+resultDiv.innerText = departments[Math.floor(Math.random() * departments.length)];
+
+if (elapsed > duration) {
+clearInterval(timer);
+clearInterval(effectTimer);
+// 結果が出る直前にカットインを表示
+showCutIn();
+}
+}, 50);
+
+function showCutIn() {
+cutIn.classList.add("active");
+
+// カットインが表示されている間に結果を準備し、一気に表示
+setTimeout(() => {
+// カットインを非表示にする
+cutIn.classList.remove("active");
+
+// 同時に結果の演出を開始
+flash.classList.add("flash-anim");
+document.body.classList.add("shake");
+circle.classList.add("magic-circle-anim");
+
+const finalDept = departments[Math.floor(Math.random() * departments.length)];
+resultDiv.innerText = finalDept;
+resultDiv.classList.add("decided");
+incant.innerText = "未来の所在が確定しました。";
+
+confetti({
+particleCount: 100,
+spread: 70,
+origin: { y: 0.6 },
+colors: ['#4fc3f7', '#ffffff', '#ffeb3b']
+});
+
+setTimeout(() => {
+flash.classList.remove("flash-anim");
+document.body.classList.remove("shake");
+circle.classList.remove("magic-circle-anim");
+btn.disabled = false;
+}, 1000);
+}, 600); // 0.6秒後にカットインを消して結果を表示
+}
+}
+</script>
+</body>
+</html>
